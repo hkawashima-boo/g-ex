@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成績照会システム</title>
+    <style>
+        :root {
+            --color-primary: #32808d;
+            --color-primary-hover: #1d746a;
+            --color-secondary: #5e6c71;
+            --color-background: #fcfcf9;
+            --color-surface: #ffffff;
+            --color-text: #133234;
+            --color-text-secondary: #626c71;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-success: #32808d;
+            --color-error: #c0152f;
+            --color-warning: #a84b2f;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
+            --radius-base: 8px;
+            --radius-lg: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .header p {
+            margin: 0;
+            color: var(--color-text-secondary);
+        }
+
+        .login-card {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 32px;
+            margin: 0 auto 40px auto;
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(50, 128, 141, 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn-secondary {
+            background: var(--color-secondary);
+            color: white;
+        }
+
+        .btn-full-width {
+            width: 100%;
+        }
+
+        .error-message {
+            color: var(--color-error);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .success-message {
+            color: var(--color-success);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .results-section {
+            display: none;
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 32px;
+            margin-top: 32px;
+        }
+
+        .student-info {
+            margin-bottom: 32px;
+            padding: 20px;
+            background: rgba(50, 128, 141, 0.05);
+            border-radius: var(--radius-base);
+        }
+
+        .student-info h2 {
+            margin: 0 0 16px 0;
+            color: var(--color-primary);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: var(--color-text-secondary);
+        }
+
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+
+        .grades-table th,
+        .grades-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .grades-table th {
+            background: rgba(50, 128, 141, 0.05);
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .grades-table tr:hover {
+            background: rgba(50, 128, 141, 0.02);
+        }
+
+        .score-cell {
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .score-excellent { background: rgba(34, 197, 94, 0.1); color: #059669; }
+        .score-good { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
+        .score-fair { background: rgba(245, 158, 11, 0.1); color: #d97706; }
+        .score-poor { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+
+        .logout-btn {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .login-card,
+            .results-section {
+                padding: 24px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .grades-table {
+                font-size: 14px;
+            }
+
+            .grades-table th,
+            .grades-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>成績照会システム</h1>
+            <p>学籍番号と保証人の郵便番号を入力して成績を確認してください</p>
+        </div>
+
+        <div id="loginForm" class="login-card">
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label" for="studentId">学籍番号</label>
+                    <input type="text" id="studentId" class="form-control" placeholder="例: 234000" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="ppos">保証人の郵便番号（ハイフンなしの数字7桁）</label>
+                    <input type="text" id="ppos" class="form-control" placeholder="例: 8140005 （空欄の場合は何も入力しないでください）">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full-width">成績を照会する</button>
+                <div id="errorMessage" class="error-message hidden"></div>
+            </form>
+        </div>
+
+        <div id="resultsSection" class="results-section">
+            <div class="student-info">
+                <h2 id="studentName">学生氏名</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">学籍番号:</span>
+                        <span id="displayStudentId">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">総得点:</span>
+                        <span id="totalScore">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">履修科目数:</span>
+                        <span id="subjectCount">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">平均得点率:</span>
+                        <span id="averageRate">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <table class="grades-table">
+                <thead>
+                    <tr>
+                        <th>科目名</th>
+                        <th>配点</th>
+                        <th>得点</th>
+                        <th>得点率</th>
+                    </tr>
+                </thead>
+                <tbody id="gradesTableBody">
+                </tbody>
+            </table>
+
+            <div class="logout-btn">
+                <button class="btn btn-secondary" onclick="logout()">ログアウト</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 学生データ（全54名）
+        const studentsData = {"234000_8140005": {"studentId": "234000","name": "福岡 太郎","ppos": "8140005","grades": [{"subject": "検理論","maxScore": "10点","score": 10},{"subject": "検画像","maxScore": "10点","score": 10},{"subject": "放化","maxScore": "4点","score": 4},{"subject": "核医","maxScore": "16点","score": 16},{"subject": "治療","maxScore": "20点","score": 20},{"subject": "医画情","maxScore": "10点","score": 10},{"subject": "医安","maxScore": "8点","score": 8},{"subject": "医解剖","maxScore": "12点","score": 12},{"subject": "医生理","maxScore": "6点","score": 6},{"subject": "医病理","maxScore": "10点","score": 10},{"subject": "医衛生","maxScore": "2点","score": 2},{"subject": "生物","maxScore": "10点","score": 10},{"subject": "物理","maxScore": "10点","score": 10},{"subject": "医工","maxScore": "6点","score": 6},{"subject": "計測","maxScore": "10点","score": 10},{"subject": "機一般","maxScore": "14点","score": 14},{"subject": "機CT","maxScore": "6点","score": 6},{"subject": "撮一般","maxScore": "10点","score": 10},{"subject": "撮造影","maxScore": "6点","score": 6},{"subject": "撮CT","maxScore": "4点","score": 4},{"subject": "画工","maxScore": "6点","score": 6},{"subject": "安法規","maxScore": "4点","score": 4},{"subject": "安管理","maxScore": "6点","score": 6},{"subject": "総得点","maxScore": "","score": 200}],"totalScore": 200},"227003_": {"studentId": "227003","name": "浅村 駿介","ppos": "","grades": [{"subject": "検理論","maxScore": "10点","score": 2},{"subject": "検画像","maxScore": "10点","score": 4},{"subject": "放化","maxScore": "4点","score": 1},{"subject": "核医","maxScore": "16点","score": 8},{"subject": "治療","maxScore": "20点","score": 8},{"subject": "医画情","maxScore": "10点","score": 3},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 3},{"subject": "医生理","maxScore": "6点","score": 1},{"subject": "医病理","maxScore": "10点","score": 4},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 4},{"subject": "物理","maxScore": "10点","score": 4},{"subject": "医工","maxScore": "6点","score": 0},{"subject": "計測","maxScore": "10点","score": 3},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 4},{"subject": "撮一般","maxScore": "10点","score": 4},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 1},{"subject": "安法規","maxScore": "4点","score": 0},{"subject": "安管理","maxScore": "6点","score": 1},{"subject": "総得点","maxScore": "","score": 74}],"totalScore": 74},"227006_7450613": {"studentId": "227006","name": "生長 玲奈","ppos": "7450613","grades": [{"subject": "検理論","maxScore": "10点","score": 6},{"subject": "検画像","maxScore": "10点","score": 6},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 14},{"subject": "治療","maxScore": "20点","score": 11},{"subject": "医画情","maxScore": "10点","score": 5},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 0},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 11},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 4},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 120}],"totalScore": 120},"227011_8100014": {"studentId": "227011","name": "江口 唯星","ppos": "8100014","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 6},{"subject": "放化","maxScore": "4点","score": 1},{"subject": "核医","maxScore": "16点","score": 11},{"subject": "治療","maxScore": "20点","score": 9},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 3},{"subject": "医解剖","maxScore": "12点","score": 5},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 5},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 5},{"subject": "物理","maxScore": "10点","score": 4},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 2},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 3},{"subject": "撮造影","maxScore": "6点","score": 1},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 0},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 2},{"subject": "総得点","maxScore": "","score": 91}],"totalScore": 91},"227014_8300055": {"studentId": "227014","name": "大石 涼雅","ppos": "8300055","grades": [{"subject": "検理論","maxScore": "10点","score": 5},{"subject": "検画像","maxScore": "10点","score": 2},{"subject": "放化","maxScore": "4点","score": 1},{"subject": "核医","maxScore": "16点","score": 9},{"subject": "治療","maxScore": "20点","score": 9},{"subject": "医画情","maxScore": "10点","score": 4},{"subject": "医安","maxScore": "8点","score": 3},{"subject": "医解剖","maxScore": "12点","score": 8},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 2},{"subject": "医衛生","maxScore": "2点","score": 0},{"subject": "生物","maxScore": "10点","score": 4},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 7},{"subject": "機CT","maxScore": "6点","score": 1},{"subject": "撮一般","maxScore": "10点","score": 4},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 3},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 94}],"totalScore": 94},"227015_8402102": {"studentId": "227015","name": "岡   瑠依輝","ppos": "8402102","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 12},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 8},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 4},{"subject": "機一般","maxScore": "14点","score": 11},{"subject": "機CT","maxScore": "6点","score": 1},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 0},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 120}],"totalScore": 120},"227021_8200207": {"studentId": "227021","name": "佐々木 瑳陽","ppos": "8200207","grades": [{"subject": "検理論","maxScore": "10点","score": 6},{"subject": "検画像","maxScore": "10点","score": 6},{"subject": "放化","maxScore": "4点","score": 2},{"subject": "核医","maxScore": "16点","score": 11},{"subject": "治療","maxScore": "20点","score": 11},{"subject": "医画情","maxScore": "10点","score": 4},{"subject": "医安","maxScore": "8点","score": 3},{"subject": "医解剖","maxScore": "12点","score": 5},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 5},{"subject": "医衛生","maxScore": "2点","score": 0},{"subject": "生物","maxScore": "10点","score": 9},{"subject": "物理","maxScore": "10点","score": 5},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 3},{"subject": "機一般","maxScore": "14点","score": 8},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 4},{"subject": "撮造影","maxScore": "6点","score": 5},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 2},{"subject": "総得点","maxScore": "","score": 103}],"totalScore": 103},"227023_8720457": {"studentId": "227023","name": "佐藤 美空","ppos": "8720457","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 13},{"subject": "医画情","maxScore": "10点","score": 5},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 110}],"totalScore": 110},"227027_6830805": {"studentId": "227027","name": "世佐木 明瞳","ppos": "6830805","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 13},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 121}],"totalScore": 121},"227032_8430304": {"studentId": "227032","name": "永尾 裕介","ppos": "8430304","grades": [{"subject": "検理論","maxScore": "10点","score": 6},{"subject": "検画像","maxScore": "10点","score": 5},{"subject": "放化","maxScore": "4点","score": 1},{"subject": "核医","maxScore": "16点","score": 10},{"subject": "治療","maxScore": "20点","score": 10},{"subject": "医画情","maxScore": "10点","score": 4},{"subject": "医安","maxScore": "8点","score": 3},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 5},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 5},{"subject": "物理","maxScore": "10点","score": 5},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 3},{"subject": "機一般","maxScore": "14点","score": 8},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 4},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 2},{"subject": "総得点","maxScore": "","score": 92}],"totalScore": 92},"227034_8180068": {"studentId": "227034","name": "中島 美来","ppos": "8180068","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 13},{"subject": "治療","maxScore": "20点","score": 13},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 122}],"totalScore": 122},"227038_8100029": {"studentId": "227038","name": "花田 和典","ppos": "8100029","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 12},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 119}],"totalScore": 119},"227047_9010303": {"studentId": "227047","name": "山城 美里","ppos": "9010303","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 13},{"subject": "医画情","maxScore": "10点","score": 5},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 110}],"totalScore": 110},"227048_8402214": {"studentId": "227048","name": "山田 倖生","ppos": "8402214","grades": [{"subject": "検理論","maxScore": "10点","score": 6},{"subject": "検画像","maxScore": "10点","score": 5},{"subject": "放化","maxScore": "4点","score": 1},{"subject": "核医","maxScore": "16点","score": 10},{"subject": "治療","maxScore": "20点","score": 10},{"subject": "医画情","maxScore": "10点","score": 4},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 5},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 6},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 3},{"subject": "機一般","maxScore": "14点","score": 8},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 4},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 97}],"totalScore": 97},"227053_8470844": {"studentId": "227053","name": "渡辺 杏莉","ppos": "8470844","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 12},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 116}],"totalScore": 116},"234001_7950061": {"studentId": "234001","name": "青木 琉夏","ppos": "7950061","grades": [{"subject": "検理論","maxScore": "10点","score": 5},{"subject": "検画像","maxScore": "10点","score": 4},{"subject": "放化","maxScore": "4点","score": 2},{"subject": "核医","maxScore": "16点","score": 10},{"subject": "治療","maxScore": "20点","score": 9},{"subject": "医画情","maxScore": "10点","score": 4},{"subject": "医安","maxScore": "8点","score": 3},{"subject": "医解剖","maxScore": "12点","score": 5},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 4},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 5},{"subject": "物理","maxScore": "10点","score": 4},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 3},{"subject": "機一般","maxScore": "14点","score": 7},{"subject": "機CT","maxScore": "6点","score": 1},{"subject": "撮一般","maxScore": "10点","score": 4},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 2},{"subject": "総得点","maxScore": "","score": 86}],"totalScore": 86},"234002_8190005": {"studentId": "234002","name": "赤峯 美月","ppos": "8190005","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 13},{"subject": "治療","maxScore": "20点","score": 14},{"subject": "医画情","maxScore": "10点","score": 7},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 11},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 130}],"totalScore": 130},"234003_8710153": {"studentId": "234003","name": "朝川 結菜","ppos": "8710153","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 13},{"subject": "治療","maxScore": "20点","score": 15},{"subject": "医画情","maxScore": "10点","score": 7},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 8},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 11},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 134}],"totalScore": 134},"234004_7981351": {"studentId": "234004","name": "麻田 大悟","ppos": "7981351","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 6},{"subject": "放化","maxScore": "4点","score": 2},{"subject": "核医","maxScore": "16点","score": 11},{"subject": "治療","maxScore": "20点","score": 12},{"subject": "医画情","maxScore": "10点","score": 5},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 5},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 6},{"subject": "物理","maxScore": "10点","score": 5},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 4},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 108}],"totalScore": 108},"234005_8820036": {"studentId": "234005","name": "阿部 貴史","ppos": "8820036","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 13},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 124}],"totalScore": 124},"234006_8114215": {"studentId": "234006","name": "池田 陽奈","ppos": "8114215","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 13},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 122}],"totalScore": 122},"234007_8000224": {"studentId": "234007","name": "井上 瑞穂","ppos": "8000224","grades": [{"subject": "検理論","maxScore": "10点","score": 9},{"subject": "検画像","maxScore": "10点","score": 9},{"subject": "放化","maxScore": "4点","score": 4},{"subject": "核医","maxScore": "16点","score": 15},{"subject": "治療","maxScore": "20点","score": 17},{"subject": "医画情","maxScore": "10点","score": 8},{"subject": "医安","maxScore": "8点","score": 6},{"subject": "医解剖","maxScore": "12点","score": 9},{"subject": "医生理","xScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 8},{"subject": "医衛生","maxScore": "2点","score": 2},{"subject": "生物","maxScore": "10点","score": 9},{"subject": "物理","maxScore": "10点","score": 8},{"subject": "医工","maxScore": "6点","score": 5},{"subject": "計測","maxScore": "10点","score": 7},{"subject": "機一般","maxScore": "14点","score": 12},{"subject": "機CT","maxScore": "6点","score": 4},{"subject": "撮一般","maxScore": "10点","score": 7},{"subject": "撮造影","maxScore": "6点","score": 4},{"subject": "撮CT","maxScore": "4点","score": 3},{"subject": "画工","maxScore": "6点","score": 4},{"subject": "安法規","maxScore": "4点","score": 3},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 152}],"totalScore": 152},"234009_8280024": {"studentId": "234009","name": "梅津 翔琉","ppos": "8280024","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 12},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 116}],"totalScore": 116},"234011_8691234": {"studentId": "234011","name": "大澤 廣祐","ppos": "8691234","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 14},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 129}],"totalScore": 129},"234014_8280051": {"studentId": "234014","name": "小川 広陽","ppos": "8280051","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 6},{"subject": "放化","maxScore": "4点","score": 2},{"subject": "核医","maxScore": "16点","score": 11},{"subject": "治療","maxScore": "20点","score": 12},{"subject": "医画情","maxScore": "10点","score": 5},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 5},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 6},{"subject": "物理","maxScore": "10点","score": 5},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 4},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 106}],"totalScore": 106},"234015_9010241": {"studentId": "234015","name": "賀数 秀太","ppos": "9010241","grades": [{"subject": "検理論","maxScore": "10点","score": 10},{"subject": "検画像","maxScore": "10点","score": 9},{"subject": "放化","maxScore": "4点","score": 4},{"subject": "核医","maxScore": "16点","score": 15},{"subject": "治療","maxScore": "20点","score": 18},{"subject": "医画情","maxScore": "10点","score": 8},{"subject": "医安","maxScore": "8点","score": 6},{"subject": "医解剖","maxScore": "12点","score": 9},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 8},{"subject": "医衛生","maxScore": "2点","score": 2},{"subject": "生物","maxScore": "10点","score": 9},{"subject": "物理","maxScore": "10点","score": 8},{"subject": "医工","maxScore": "6点","score": 5},{"subject": "計測","maxScore": "10点","score": 7},{"subject": "機一般","maxScore": "14点","score": 12},{"subject": "機CT","maxScore": "6点","score": 4},{"subject": "撮一般","maxScore": "10点","score": 7},{"subject": "撮造影","maxScore": "6点","score": 4},{"subject": "撮CT","maxScore": "4点","score": 3},{"subject": "画工","maxScore": "6点","score": 4},{"subject": "安法規","maxScore": "4点","score": 3},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 166}],"totalScore": 166},"234016_8050068": {"studentId": "234016","name": "亀崎 悠斗","ppos": "8050068","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 13},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 118}],"totalScore": 118},"234018_8690551": {"studentId": "234018","name": "川畑 巴菜","ppos": "8690551","grades": [{"subject": "検理論","maxScore": "10点","score": 9},{"subject": "検画像","maxScore": "10点","score": 9},{"subject": "放化","maxScore": "4点","score": 4},{"subject": "核医","maxScore": "16点","score": 14},{"subject": "治療","maxScore": "20点","score": 16},{"subject": "医画情","maxScore": "10点","score": 8},{"subject": "医安","maxScore": "8点","score": 6},{"subject": "医解剖","maxScore": "12点","score": 8},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 2},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 11},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 151}],"totalScore": 151},"234019_9012104": {"studentId": "234019","name": "喜納 琉空","ppos": "9012104","grades": [{"subject": "検理論","maxScore": "10点","score": 9},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 14},{"subject": "治療","maxScore": "20点","score": 16},{"subject": "医画情","maxScore": "10点","score": 7},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 8},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 11},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 146}],"totalScore": 146},"234021_811110": {"studentId": "234021","name": "釘崎 洸志","ppos": "811110","grades": [{"subject": "検理論","maxScore": "10点","score": 3},{"subject": "検画像","maxScore": "10点","score": 2},{"subject": "放化","maxScore": "4点","score": 1},{"subject": "核医","maxScore": "16点","score": 6},{"subject": "治療","maxScore": "20点","score": 6},{"subject": "医画情","maxScore": "10点","score": 2},{"subject": "医安","maxScore": "8点","score": 1},{"subject": "医解剖","maxScore": "12点","score": 3},{"subject": "医生理","maxScore": "6点","score": 1},{"subject": "医病理","maxScore": "10点","score": 2},{"subject": "医衛生","maxScore": "2点","score": 0},{"subject": "生物","maxScore": "10点","score": 3},{"subject": "物理","maxScore": "10点","score": 2},{"subject": "医工","maxScore": "6点","score": 1},{"subject": "計測","maxScore": "10点","score": 1},{"subject": "機一般","maxScore": "14点","score": 5},{"subject": "機CT","maxScore": "6点","score": 1},{"subject": "撮一般","maxScore": "10点","score": 2},{"subject": "撮造影","maxScore": "6点","score": 1},{"subject": "撮CT","maxScore": "4点","score": 0},{"subject": "画工","maxScore": "6点","score": 1},{"subject": "安法規","maxScore": "4点","score": 0},{"subject": "安管理","maxScore": "6点","score": 1},{"subject": "総得点","maxScore": "","score": 54}],"totalScore": 54},"234023_8730002": {"studentId": "234023","name": "小場川 星輝","ppos": "8730002","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 12},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 116}],"totalScore": 116},"234025_7400724": {"studentId": "234025","name": "近藤 想良","ppos": "7400724","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 13},{"subject": "治療","maxScore": "20点","score": 14},{"subject": "医画情","maxScore": "10点","score": 7},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 131}],"totalScore": 131},"234026_8000217": {"studentId": "234026","name": "﨑村 恵衣","ppos": "8000217","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 13},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 122}],"totalScore": 122},"234027_8112310": {"studentId": "234027","name": "笹木 仁","ppos": "8112310","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 12},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 115}],"totalScore": 115},"234028_8800934": {"studentId": "234028","name": "佐藤 壱成","ppos": "8800934","grades": [{"subject": "検理論","maxScore": "10点","score": 4},{"subject": "検画像","maxScore": "10点","score": 3},{"subject": "放化","maxScore": "4点","score": 1},{"subject": "核医","maxScore": "16点","score": 7},{"subject": "治療","maxScore": "20点","score": 7},{"subject": "医画情","maxScore": "10点","score": 3},{"subject": "医安","maxScore": "8点","score": 2},{"subject": "医解剖","maxScore": "12点","score": 4},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 3},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 4},{"subject": "物理","maxScore": "10点","score": 3},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 2},{"subject": "機一般","maxScore": "14点","score": 6},{"subject": "機CT","maxScore": "6点","score": 1},{"subject": "撮一般","maxScore": "10点","score": 3},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 1},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 2},{"subject": "総得点","maxScore": "","score": 72}],"totalScore": 72},"234029_9030805": {"studentId": "234029","name": "島袋 愛莉","ppos": "9030805","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 13},{"subject": "治療","maxScore": "20点","score": 15},{"subject": "医画情","maxScore": "10点","score": 7},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 8},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 135}],"totalScore": 135},"234030_8430001": {"studentId": "234030","name": "下平 琴子","ppos": "8430001","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 13},{"subject": "治療","maxScore": "20点","score": 14},{"subject": "医画情","maxScore": "10点","score": 7},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 131}],"totalScore": 131},"234031_8960058": {"studentId": "234031","name": "末弘 大貴","ppos": "8960058","grades": [{"subject": "検理論","maxScore": "10点","score": 9},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 14},{"subject": "治療","maxScore": "20点","score": 16},{"subject": "医画情","maxScore": "10点","score": 7},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 8},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 11},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 146}],"totalScore": 146},"234032_7500313": {"studentId": "234032","name": "田中 亜矢菜","ppos": "7500313","grades": [{"subject": "検理論","maxScore": "10点","score": 6},{"subject": "検画像","maxScore": "10点","score": 6},{"subject": "放化","maxScore": "4点","score": 2},{"subject": "核医","maxScore": "16点","score": 10},{"subject": "治療","maxScore": "20点","score": 11},{"subject": "医画情","maxScore": "10点","score": 5},{"subject": "医安","maxScore": "8点","score": 3},{"subject": "医解剖","maxScore": "12点","score": 5},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 5},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 6},{"subject": "物理","maxScore": "10点","score": 5},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 4},{"subject": "機一般","maxScore": "14点","score": 8},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 4},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 99}],"totalScore": 99},"234033_8320001": {"studentId": "234033","name": "津村 啓良","ppos": "8320001","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 7},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 14},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 7},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 125}],"totalScore": 125},"234034_8574901": {"studentId": "234034","name": "出﨑 鈴蘭","ppos": "8574901","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 6},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 12},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 6},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 114}],"totalScore": 114},"234037_9011117": {"studentId": "234037","name": "仲村渠 ひな乃","ppos": "9011117","grades": [{"subject": "検理論","maxScore": "10点","score": 6},{"subject": "検画像","maxScore": "10点","score": 6},{"subject": "放化","maxScore": "4点","score": 2},{"subject": "核医","maxScore": "16点","score": 11},{"subject": "治療","maxScore": "20点","score": 11},{"subject": "医画情","maxScore": "10点","score": 5},{"subject": "医安","maxScore": "8点","score": 3},{"subject": "医解剖","maxScore": "12点","score": 5},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 5},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 6},{"subject": "物理","maxScore": "10点","score": 5},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 4},{"subject": "機一般","maxScore": "14点","score": 8},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 4},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 102}],"totalScore": 102},"234038_8140153": {"studentId": "234038","name": "楢崎 蓮","ppos": "8140153","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 13},{"subject": "治療","maxScore": "20点","score": 14},{"subject": "医画情","maxScore": "10点","score": 7},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 134}],"totalScore": 134},"234039_8991402": {"studentId": "234039","name": "浜口 敬太","ppos": "8991402","grades": [{"subject": "検理論","maxScore": "10点","score": 5},{"subject": "検画像","maxScore": "10点","score": 4},{"subject": "放化","maxScore": "4点","score": 2},{"subject": "核医","maxScore": "16点","score": 9},{"subject": "治療","maxScore": "20点","score": 9},{"subject": "医画情","maxScore": "10点","score": 4},{"subject": "医安","maxScore": "8点","score": 3},{"subject": "医解剖","maxScore": "12点","score": 4},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 4},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 5},{"subject": "物理","maxScore": "10点","score": 4},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 3},{"subject": "機一般","maxScore": "14点","score": 7},{"subject": "機CT","maxScore": "6点","score": 1},{"subject": "撮一般","maxScore": "10点","score": 4},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 2},{"subject": "総得点","maxScore": "","score": 84}],"totalScore": 84},"234041_8490305": {"studentId": "234041","name": "藤瀬 愛梨","ppos": "8490305","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 4},{"subject": "核医","maxScore": "16点","score": 13},{"subject": "治療","maxScore": "20点","score": 15},{"subject": "医画情","maxScore": "10点","score": 7},{"subject": "医安","maxScore": "8点","score": 6},{"subject": "医解剖","maxScore": "12点","score": 8},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 2},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 11},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 141}],"totalScore": 141},"234042_8150042": {"studentId": "234042","name": "古城戸 柚月","ppos": "8150042","grades": [{"subject": "検理論","maxScore": "10点","score": 4},{"subject": "検画像","maxScore": "10点","score": 3},{"subject": "放化","maxScore": "4点","score": 1},{"subject": "核医","maxScore": "16点","score": 7},{"subject": "治療","maxScore": "20点","score": 7},{"subject": "医画情","maxScore": "10点","score": 3},{"subject": "医安","maxScore": "8点","score": 2},{"subject": "医解剖","maxScore": "12点","score": 4},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 3},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 4},{"subject": "物理","maxScore": "10点","score": 3},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 2},{"subject": "機一般","maxScore": "14点","score": 6},{"subject": "機CT","maxScore": "6点","score": 1},{"subject": "撮一般","maxScore": "10点","score": 3},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 1},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 2},{"subject": "総得点","maxScore": "","score": 71}],"totalScore": 71},"234043_8640041": {"studentId": "234043","name": "古城 彩愛","ppos": "8640041","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 4},{"subject": "核医","maxScore": "16点","score": 13},{"subject": "治療","maxScore": "20点","score": 15},{"subject": "医画情","maxScore": "10点","score": 7},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 8},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 11},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 139}],"totalScore": 139},"234044_8240034": {"studentId": "234044","name": "松永 ほのか","ppos": "8240034","grades": [{"subject": "検理論","maxScore": "10点","score": 7},{"subject": "検画像","maxScore": "10点","score": 6},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 12},{"subject": "治療","maxScore": "20点","score": 12},{"subject": "医画情","maxScore": "10点","score": 6},{"subject": "医安","maxScore": "8点","score": 4},{"subject": "医解剖","maxScore": "12点","score": 6},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 6},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 6},{"subject": "物理","maxScore": "10点","score": 6},{"subject": "医工","maxScore": "6点","score": 3},{"subject": "計測","maxScore": "10点","score": 5},{"subject": "機一般","maxScore": "14点","score": 9},{"subject": "機CT","maxScore": "6点","score": 2},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 113}],"totalScore": 113},"234045_7594101": {"studentId": "234045","name": "松村 日向","ppos": "7594101","grades": [{"subject": "検理論","maxScore": "10点","score": 5},{"subject": "検画像","maxScore": "10点","score": 4},{"subject": "放化","maxScore": "4点","score": 2},{"subject": "核医","maxScore": "16点","score": 9},{"subject": "治療","maxScore": "20点","score": 9},{"subject": "医画情","maxScore": "10点","score": 4},{"subject": "医安","maxScore": "8点","score": 3},{"subject": "医解剖","maxScore": "12点","score": 5},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 4},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 5},{"subject": "物理","maxScore": "10点","score": 4},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 3},{"subject": "機一般","maxScore": "14点","score": 7},{"subject": "機CT","maxScore": "6点","score": 1},{"subject": "撮一般","maxScore": "10点","score": 4},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 2},{"subject": "総得点","maxScore": "","score": 85}],"totalScore": 85},"234047_8430302": {"studentId": "234047","name": "向井 洸貴","ppos": "8430302","grades": [{"subject": "検理論","maxScore": "10点","score": 5},{"subject": "検画像","maxScore": "10点","score": 5},{"subject": "放化","maxScore": "4点","score": 2},{"subject": "核医","maxScore": "16点","score": 9},{"subject": "治療","maxScore": "20点","score": 10},{"subject": "医画情","maxScore": "10点","score": 4},{"subject": "医安","maxScore": "8点","score": 3},{"subject": "医解剖","maxScore": "12点","score": 5},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 4},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 5},{"subject": "物理","maxScore": "10点","score": 4},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 3},{"subject": "機一般","maxScore": "14点","score": 7},{"subject": "機CT","maxScore": "6点","score": 1},{"subject": "撮一般","maxScore": "10点","score": 4},{"subject": "撮造影","maxScore": "6点","score": 2},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 2},{"subject": "安法規","maxScore": "4点","score": 1},{"subject": "安管理","maxScore": "6点","score": 2},{"subject": "総得点","maxScore": "","score": 89}],"totalScore": 89},"234048_8111344": {"studentId": "234048","name": "山口 ちひろ","ppos": "8111344","grades": [{"subject": "検理論","maxScore": "10点","score": 8},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 3},{"subject": "核医","maxScore": "16点","score": 13},{"subject": "治療","maxScore": "20点","score": 15},{"subject": "医画情","maxScore": "10点","score": 7},{"subject": "医安","maxScore": "8点","score": 5},{"subject": "医解剖","maxScore": "12点","score": 7},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 7},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 7},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 10},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 6},{"subject": "撮造影","maxScore": "6点","score": 3},{"subject": "撮CT","maxScore": "4点","score": 2},{"subject": "画工","maxScore": "6点","score": 3},{"subject": "安法規","maxScore": "4点","score": 2},{"subject": "安管理","maxScore": "6点","score": 3},{"subject": "総得点","maxScore": "","score": 140}],"totalScore": 140},"234049_8060049": {"studentId": "234049","name": "山﨑 遥輝","ppos": "8060049","grades": [{"subject": "検理論","maxScore": "10点","score": 9},{"subject": "検画像","maxScore": "10点","score": 8},{"subject": "放化","maxScore": "4点","score": 4},{"subject": "核医","maxScore": "16点","score": 14},{"subject": "治療","maxScore": "20点","score": 16},{"subject": "医画情","maxScore": "10点","score": 8},{"subject": "医安","maxScore": "8点","score": 6},{"subject": "医解剖","maxScore": "12点","score": 9},{"subject": "医生理","maxScore": "6点","score": 4},{"subject": "医病理","maxScore": "10点","score": 8},{"subject": "医衛生","maxScore": "2点","score": 2},{"subject": "生物","maxScore": "10点","score": 8},{"subject": "物理","maxScore": "10点","score": 8},{"subject": "医工","maxScore": "6点","score": 4},{"subject": "計測","maxScore": "10点","score": 7},{"subject": "機一般","maxScore": "14点","score": 11},{"subject": "機CT","maxScore": "6点","score": 4},{"subject": "撮一般","maxScore": "10点","score": 7},{"subject": "撮造影","maxScore": "6点","score": 4},{"subject": "撮CT","maxScore": "4点","score": 3},{"subject": "画工","maxScore": "6点","score": 4},{"subject": "安法規","maxScore": "4点","score": 3},{"subject": "安管理","maxScore": "6点","score": 4},{"subject": "総得点","maxScore": "","score": 160}],"totalScore": 160},"234051_8120042": {"studentId": "234051","name": "山根 桜和","ppos": "8120042","grades": [{"subject": "検理論","maxScore": "10点","score": 6},{"subject": "検画像","maxScore": "10点","score": 4},{"subject": "放化","maxScore": "4点","score": 1},{"subject": "核医","maxScore": "16点","score": 8},{"subject": "治療","maxScore": "20点","score": 9},{"subject": "医画情","maxScore": "10点","score": 3},{"subject": "医安","maxScore": "8点","score": 2},{"subject": "医解剖","maxScore": "12点","score": 4},{"subject": "医生理","maxScore": "6点","score": 2},{"subject": "医病理","maxScore": "10点","score": 3},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 4},{"subject": "物理","maxScore": "10点","score": 3},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 2},{"subject": "機一般","maxScore": "14点","score": 6},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 4},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 1},{"subject": "安法規","maxScore": "4点","score": 0},{"subject": "安管理","maxScore": "6点","score": 5},{"subject": "総得点","maxScore": "","score": 77}],"totalScore": 77},"234052_8550016": {"studentId": "234052","name": "吉田 優香","ppos": "8550016","grades": [{"subject": "検理論","maxScore": "10点","score": 5},{"subject": "検画像","maxScore": "10点","score": 6},{"subject": "放化","maxScore": "4点","score": 2},{"subject": "核医","maxScore": "16点","score": 10},{"subject": "治療","maxScore": "20点","score": 11},{"subject": "医画情","maxScore": "10点","score": 5},{"subject": "医安","maxScore": "8点","score": 3},{"subject": "医解剖","maxScore": "12点","score": 5},{"subject": "医生理","maxScore": "6点","score": 3},{"subject": "医病理","maxScore": "10点","score": 5},{"subject": "医衛生","maxScore": "2点","score": 1},{"subject": "生物","maxScore": "10点","score": 6},{"subject": "物理","maxScore": "10点","score": 5},{"subject": "医工","maxScore": "6点","score": 2},{"subject": "計測","maxScore": "10点","score": 6},{"subject": "機一般","maxScore": "14点","score": 6},{"subject": "機CT","maxScore": "6点","score": 3},{"subject": "撮一般","maxScore": "10点","score": 5},{"subject": "撮造影","maxScore": "6点","score": 4},{"subject": "撮CT","maxScore": "4点","score": 1},{"subject": "画工","maxScore": "6点","score": 1},{"subject": "安法規","maxScore": "4点","score": 0},{"subject": "安管理","maxScore": "6点","score": 5},{"subject": "総得点","maxScore": "","score": 106}],"totalScore": 106}};
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const studentId = document.getElementById('studentId').value.trim();
+            const ppos = document.getElementById('ppos').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // 認証キーを作成
+            const key = `${studentId}_${ppos}`;
+            
+            // 学生データを検索
+            const studentData = studentsData[key];
+            
+            if (studentData) {
+                displayResults(studentData);
+                errorMessage.classList.add('hidden');
+            } else {
+                errorMessage.textContent = '学籍番号または保証人の郵便番号が正しくありません。';
+                errorMessage.classList.remove('hidden');
+            }
+        }
+
+        function displayResults(student) {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+            
+            // 学生情報を表示
+            document.getElementById('studentName').textContent = student.name;
+            document.getElementById('displayStudentId').textContent = student.studentId;
+            document.getElementById('totalScore').textContent = `${student.totalScore}点`;
+            
+            // 総得点以外の科目数を計算
+            const actualSubjects = student.grades.filter(grade => grade.subject !== '総得点');
+            document.getElementById('subjectCount').textContent = `${actualSubjects.length}科目`;
+            
+            // 平均得点率を計算
+            let totalMaxScore = 0;
+            let totalScore = 0;
+            
+            actualSubjects.forEach(grade => {
+                const maxScore = parseInt(grade.maxScore.replace('点', '')) || 0;
+                totalMaxScore += maxScore;
+                totalScore += grade.score;
+            });
+            
+            const averageRate = totalMaxScore > 0 ? ((totalScore / totalMaxScore) * 100).toFixed(1) : '0.0';
+            document.getElementById('averageRate').textContent = `${averageRate}%`;
+            
+            // 成績表を作成
+            const tableBody = document.getElementById('gradesTableBody');
+            tableBody.innerHTML = '';
+            
+            actualSubjects.forEach(grade => {
+                const row = document.createElement('tr');
+                const maxScore = parseInt(grade.maxScore.replace('点', '')) || 1;
+                const rate = ((grade.score / maxScore) * 100).toFixed(1);
+                
+                // 得点率による色分け
+                let scoreClass = 'score-poor';
+                if (rate >= 80) scoreClass = 'score-excellent';
+                else if (rate >= 60) scoreClass = 'score-good';
+                else if (rate >= 40) scoreClass = 'score-fair';
+                
+                row.innerHTML = `
+                    <td>${grade.subject}</td>
+                    <td>${grade.maxScore}</td>
+                    <td class="score-cell ${scoreClass}">${grade.score}点</td>
+                    <td>${rate}%</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function logout() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('studentId').value = '';
+            document.getElementById('ppos').value = '';
+            document.getElementById('errorMessage').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
